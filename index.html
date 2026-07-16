@@ -12,6 +12,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <!-- Google Identity Services (Drive için) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         /* Touch scroll improvements & native mobile look */
         body {
@@ -295,6 +297,25 @@
                     <textarea id="form-notlar" placeholder="Kot farkı, nem, özel geçiş profili gereksinimleri vb..." rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all resize-none"></textarea>
                 </div>
 
+                <hr class="border-slate-100">
+
+                <!-- 8. Fotoğraflar (Google Drive) -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Fotoğraflar</label>
+                        <span class="text-[10px] text-slate-400 font-medium"><i class="fa-brands fa-google-drive"></i> Google Drive</span>
+                    </div>
+                    <!-- Kamerayı açan gizli input -->
+                    <input type="file" accept="image/*" capture="environment" id="foto-input" class="hidden" onchange="handleFotoCapture(event)">
+                    <button type="button" onclick="document.getElementById('foto-input').click()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl py-3 flex items-center justify-center space-x-2 border border-indigo-100 active:scale-95 transition-all">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>Kamera ile Fotoğraf Çek</span>
+                    </button>
+                    <div id="foto-list" class="space-y-1.5 pt-1">
+                        <p class="text-xs text-slate-400">Henüz fotoğraf eklenmedi.</p>
+                    </div>
+                </div>
+
             </div>
 
             <!-- Save & Delete Actions -->
@@ -340,6 +361,11 @@
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
+
+        // ⚠️ GOOGLE DRIVE için OAuth Client ID (README'deki adımlarla oluşturun)
+        const GOOGLE_CLIENT_ID = "479720238143-s080f4u3bvhcn15p66sg0ipgosusi2t7.apps.googleusercontent.com";
+        // Fotoğrafların kaydedileceği Drive klasör adı
+        const DRIVE_FOLDER_NAME = "Mahal Kontrol Fotoğraflar";
     </script>
 
     <!-- APP SCRIPT -->
@@ -351,10 +377,10 @@
 
         // Default layout/rooms for a brand new account
         const defaultRooms = [
-            { id: "1", name: "Salon", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", completed: false },
-            { id: "2", name: "Mutfak", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", completed: false },
-            { id: "3", name: "Antre / Hol", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", completed: false },
-            { id: "4", name: "Yatak Odası", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", completed: false }
+            { id: "1", name: "Salon", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", fotolar: [], sonFotoNo: 0, completed: false },
+            { id: "2", name: "Mutfak", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", fotolar: [], sonFotoNo: 0, completed: false },
+            { id: "3", name: "Antre / Hol", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", fotolar: [], sonFotoNo: 0, completed: false },
+            { id: "4", name: "Yatak Odası", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", fotolar: [], sonFotoNo: 0, completed: false }
         ];
 
         // ============================================================
@@ -509,6 +535,7 @@
                                 ${statusBadge}
                                 ${room.m2 ? `<span class="text-[10px] text-indigo-500 font-bold">${room.m2} m²</span>` : ''}
                                 ${room.zeminTuru ? `<span class="text-[10px] text-slate-400 font-medium">${room.zeminTuru}</span>` : ''}
+                                ${(room.fotolar && room.fotolar.length) ? `<span class="text-[10px] text-slate-400 font-medium"><i class="fa-solid fa-camera"></i> ${room.fotolar.length}</span>` : ''}
                             </div>
                         </div>
                     </div>
@@ -545,6 +572,8 @@
                 duvarHatti: "",
                 kapiKesim: "",
                 notlar: "",
+                fotolar: [],
+                sonFotoNo: 0,
                 completed: false
             };
 
@@ -579,11 +608,15 @@
 
             // Clone to temp
             currentTempForm = { ...room };
+            // Fotoğraf dizisini ayrı kopyala (referans paylaşmasın)
+            currentTempForm.fotolar = Array.isArray(room.fotolar) ? [...room.fotolar] : [];
+            currentTempForm.sonFotoNo = room.sonFotoNo || 0;
 
             // Fill elements
             document.getElementById('form-room-title').innerText = room.name;
             document.getElementById('edit-room-name').value = room.name;
             document.getElementById('edit-room-m2').value = room.m2 || "";
+            renderFotolar();
 
             // Render Selected Chips
             updateFormUIParents();
@@ -741,6 +774,10 @@
                     if (room.notlar) {
                         report += `• Ek Notlar: ${room.notlar}\n`;
                     }
+                    if (room.fotolar && room.fotolar.length) {
+                        report += `• Fotoğraflar (${room.fotolar.length}):\n`;
+                        room.fotolar.forEach(f => { report += `   - ${f.name}: ${f.link}\n`; });
+                    }
                     report += "\n";
                 }
             });
@@ -792,6 +829,168 @@
             link.click();
             document.body.removeChild(link);
             showToast("CSV dosyası indirildi.");
+        }
+
+        // ============================================================
+        //  GOOGLE DRIVE FOTOĞRAF YÜKLEME
+        // ============================================================
+        let driveToken = null;
+        let tokenClient = null;
+        let pendingDriveCb = null;
+
+        // Drive erişim token'ını sağla (gerekirse Google girişi aç)
+        function ensureDriveToken(cb) {
+            if (!window.google || !google.accounts || !google.accounts.oauth2) {
+                showToast('Google servisi henüz yüklenmedi, birkaç saniye sonra tekrar deneyin.', 'fa-circle-exclamation text-amber-500');
+                return;
+            }
+            if (GOOGLE_CLIENT_ID.indexOf('BURAYA') === 0) {
+                showToast('Önce Google Client ID ayarlanmalı (README).', 'fa-circle-exclamation text-amber-500');
+                return;
+            }
+            if (!tokenClient) {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: GOOGLE_CLIENT_ID,
+                    scope: 'https://www.googleapis.com/auth/drive.file',
+                    callback: (resp) => {
+                        if (resp && resp.access_token) driveToken = resp.access_token;
+                        if (pendingDriveCb) { const f = pendingDriveCb; pendingDriveCb = null; f(); }
+                    }
+                });
+            }
+            if (driveToken) { cb(); }
+            else { pendingDriveCb = cb; tokenClient.requestAccessToken(); }
+        }
+
+        // Fotoğrafı yüklemeden önce küçült (hız + yer için)
+        function compressImage(file, maxDim = 1600, quality = 0.8) {
+            return new Promise((resolve) => {
+                const img = new Image();
+                const url = URL.createObjectURL(file);
+                img.onload = () => {
+                    let w = img.width, h = img.height;
+                    if (w > h && w > maxDim) { h = Math.round(h * maxDim / w); w = maxDim; }
+                    else if (h >= w && h > maxDim) { w = Math.round(w * maxDim / h); h = maxDim; }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w; canvas.height = h;
+                    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+                    canvas.toBlob(b => { URL.revokeObjectURL(url); resolve(b || file); }, 'image/jpeg', quality);
+                };
+                img.onerror = () => { URL.revokeObjectURL(url); resolve(file); };
+                img.src = url;
+            });
+        }
+
+        // Drive'da klasörü bul, yoksa oluştur
+        async function ensureDriveFolder(name) {
+            const q = encodeURIComponent(`name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+            let res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`, {
+                headers: { Authorization: 'Bearer ' + driveToken }
+            });
+            if (res.status === 401) { driveToken = null; throw new Error('Oturum süresi doldu, tekrar deneyin.'); }
+            let data = await res.json();
+            if (data.files && data.files.length) return data.files[0].id;
+            res = await fetch('https://www.googleapis.com/drive/v3/files', {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name: name, mimeType: 'application/vnd.google-apps.folder' })
+            });
+            data = await res.json();
+            return data.id;
+        }
+
+        // Dosyayı Drive'a yükle (multipart)
+        async function uploadToDrive(blob, filename, folderId) {
+            const metadata = { name: filename + '.jpg', parents: folderId ? [folderId] : undefined };
+            const form = new FormData();
+            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+            form.append('file', blob);
+            const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
+                method: 'POST',
+                headers: { Authorization: 'Bearer ' + driveToken },
+                body: form
+            });
+            if (res.status === 401) { driveToken = null; throw new Error('Oturum süresi doldu, tekrar deneyin.'); }
+            const data = await res.json();
+            if (data.error) throw new Error(data.error.message || 'Yükleme hatası');
+            return data;
+        }
+
+        // Kamera ile çekilen fotoğrafı işle
+        function handleFotoCapture(e) {
+            const file = e.target.files && e.target.files[0];
+            e.target.value = '';
+            if (!file) return;
+            ensureDriveToken(async () => {
+                try {
+                    showToast('Fotoğraf Drive\'a yükleniyor...', 'fa-spinner fa-spin text-indigo-400');
+                    const room = rooms.find(r => r.id === activeRoomId);
+                    const isim = (document.getElementById('edit-room-name').value.trim() || currentTempForm.name || room.name);
+                    const n = (currentTempForm.sonFotoNo || 0) + 1;
+                    const filename = `${isim} ${n}`;
+                    const blob = await compressImage(file);
+                    const folderId = await ensureDriveFolder(DRIVE_FOLDER_NAME);
+                    const res = await uploadToDrive(blob, filename, folderId);
+                    const foto = {
+                        id: res.id,
+                        name: res.name,
+                        link: res.webViewLink || ('https://drive.google.com/file/d/' + res.id + '/view')
+                    };
+                    if (!Array.isArray(currentTempForm.fotolar)) currentTempForm.fotolar = [];
+                    currentTempForm.fotolar.push(foto);
+                    currentTempForm.sonFotoNo = n;
+                    // Fotoğrafı anında kalıcı kaydet (form Kaydet'ten bağımsız)
+                    const idx = rooms.findIndex(r => r.id === activeRoomId);
+                    if (idx > -1) {
+                        rooms[idx].fotolar = [...currentTempForm.fotolar];
+                        rooms[idx].sonFotoNo = n;
+                        saveData();
+                    }
+                    renderFotolar();
+                    showToast('Kaydedildi: ' + res.name);
+                } catch (err) {
+                    showToast('Yükleme başarısız: ' + err.message, 'fa-circle-exclamation text-amber-500');
+                }
+            });
+        }
+
+        // Fotoğraf listesini çiz
+        function renderFotolar() {
+            const c = document.getElementById('foto-list');
+            const arr = currentTempForm.fotolar || [];
+            if (!arr.length) {
+                c.innerHTML = '<p class="text-xs text-slate-400">Henüz fotoğraf eklenmedi.</p>';
+                return;
+            }
+            c.innerHTML = arr.map((f, i) => `
+                <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
+                    <div class="flex items-center space-x-2 min-w-0">
+                        <i class="fa-solid fa-image text-indigo-500"></i>
+                        <span class="text-xs font-semibold text-slate-700 truncate">${f.name}</span>
+                    </div>
+                    <div class="flex items-center space-x-3 flex-shrink-0 pl-2">
+                        <a href="${f.link}" target="_blank" class="text-indigo-600 text-xs font-bold">Aç</a>
+                        <button type="button" onclick="deleteFoto(${i})" class="text-rose-500 text-xs"><i class="fa-solid fa-trash-can"></i></button>
+                    </div>
+                </div>`).join('');
+        }
+
+        // Fotoğraf sil (Drive'dan da siler)
+        function deleteFoto(i) {
+            const arr = currentTempForm.fotolar || [];
+            const f = arr[i];
+            if (!f) return;
+            if (!confirm('Bu fotoğrafı silmek istediğinize emin misiniz?')) return;
+            arr.splice(i, 1);
+            const idx = rooms.findIndex(r => r.id === activeRoomId);
+            if (idx > -1) { rooms[idx].fotolar = [...arr]; saveData(); }
+            renderFotolar();
+            if (driveToken && f.id) {
+                fetch('https://www.googleapis.com/drive/v3/files/' + f.id, {
+                    method: 'DELETE', headers: { Authorization: 'Bearer ' + driveToken }
+                }).catch(() => {});
+            }
+            showToast('Fotoğraf silindi.', 'fa-trash-can text-rose-500');
         }
 
         // RESET ALL APP DATA
