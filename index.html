@@ -878,10 +878,10 @@
             });
         }
 
-        // Dosyayı Apps Script üzerinden Drive'a yükle
-        async function uploadToDrive(blob, filename) {
+        // Dosyayı Apps Script üzerinden Drive'a yükle (mahal adına göre alt klasöre)
+        async function uploadToDrive(blob, filename, subfolder) {
             const dataBase64 = await blobToBase64(blob);
-            return await driveApiPost({ action: 'upload', filename: filename, dataBase64: dataBase64 });
+            return await driveApiPost({ action: 'upload', filename: filename, subfolder: subfolder, dataBase64: dataBase64 });
         }
 
         // Kamera ile çekilen fotoğrafı işle
@@ -897,7 +897,7 @@
                     const n = (currentTempForm.sonFotoNo || 0) + 1;
                     const filename = `${isim} ${n}`;
                     const blob = await compressImage(file);
-                    const res = await uploadToDrive(blob, filename);
+                    const res = await uploadToDrive(blob, filename, isim);
                     const foto = {
                         id: res.id,
                         name: res.name,
@@ -964,9 +964,4 @@
                 rooms = JSON.parse(JSON.stringify(defaultRooms));
                 saveData();
                 renderDashboard();
-                showToast("Veriler sıfırlandı.", "fa-trash-can text-rose-500");
-            }
-        }
-    </script>
-</body>
-</html>
+                showToast("Veriler sıfırlandı.", "fa
