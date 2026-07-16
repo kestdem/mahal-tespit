@@ -326,20 +326,24 @@
          Ayrica: Authentication > Sign-in method > "E-posta/Sifre" ACIK olmali,
          Realtime Database olusturulmus olmali.
          ========================================================= -->
-    <script>
-        const firebaseConfig = {
-            apiKey: "BURAYA_API_KEY",
-            authDomain: "BURAYA_PROJE.firebaseapp.com",
-            databaseURL: "https://BURAYA_PROJE-default-rtdb.firebaseio.com",
-            projectId: "BURAYA_PROJE",
-            storageBucket: "BURAYA_PROJE.appspot.com",
-            messagingSenderId: "BURAYA_SENDER_ID",
-            appId: "BURAYA_APP_ID"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.database();
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/12.16.0/firebase-app.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      const firebaseConfig = {
+        apiKey: "AIzaSyCcGoe2FAuH7M-5JMnxWeF0EWjJisi_030",
+        authDomain: "mahal-kontrol.firebaseapp.com",
+        projectId: "mahal-kontrol",
+        storageBucket: "mahal-kontrol.firebasestorage.app",
+        messagingSenderId: "769571041433",
+        appId: "1:769571041433:web:62d0ef3ac61d79f08e4808"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
     </script>
 
     <!-- APP SCRIPT -->
