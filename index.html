@@ -12,8 +12,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
-    <!-- Google Identity Services (Drive için) -->
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Fotoğraf yükleme Google Apps Script Web App üzerinden yapılır (giriş gerekmez) -->
     <style>
         /* Touch scroll improvements & native mobile look */
         body {
@@ -117,7 +116,7 @@
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
                 <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Hızlı Yeni Mahal Ekle</label>
                 <div class="flex space-x-2">
-                    <input type="text" id="new-room-input" placeholder="Mahal adı"
+                    <input type="text" id="new-room-input" placeholder="Örn: Yatak Odası, Koridor..."
                         class="flex-grow bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
                     <button onclick="addRoom()" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 flex items-center justify-center transition-colors active:scale-95">
                         <i class="fa-solid fa-plus text-base"></i>
@@ -362,9 +361,10 @@
         const auth = firebase.auth();
         const db = firebase.database();
 
-        // ⚠️ GOOGLE DRIVE için OAuth Client ID (README'deki adımlarla oluşturun)
-        const GOOGLE_CLIENT_ID = "479720238143-s080f4u3bvhcn15p66sg0ipgosusi2t7.apps.googleusercontent.com";
-        // Fotoğrafların kaydedileceği Drive klasör adı
+        // ⚠️ GOOGLE DRIVE: Apps Script Web App URL'i (README_KURULUM.md'deki adımlarla alın)
+        // Ziyaretçi giriş yapmaz; fotoğraflar bu adres üzerinden SİZİN Drive'ınıza kaydedilir.
+        const DRIVE_ENDPOINT = "https://script.google.com/macros/s/AKfycbyo9W-yZ7V0JDcAKbLa3TIViPl6yrpHR8i9IEg67sRJ1HCW6NT3s0j5kfCWFAReUhPi/exec";
+        // Fotoğrafların kaydedileceği Drive klasör adı (Code.gs ile aynı olmalı)
         const DRIVE_FOLDER_NAME = "Mahal Kontrol Fotoğraflar";
     </script>
 
@@ -834,32 +834,29 @@
         // ============================================================
         //  GOOGLE DRIVE FOTOĞRAF YÜKLEME
         // ============================================================
-        let driveToken = null;
-        let tokenClient = null;
-        let pendingDriveCb = null;
+        // Apps Script Web App'e istek gönderen yardımcı (CORS preflight'ı önlemek için text/plain)
+        async function driveApiPost(payload) {
+            if (!DRIVE_ENDPOINT || DRIVE_ENDPOINT.indexOf('BURAYA') === 0) {
+                throw new Error('Drive adresi ayarlanmamış (README_KURULUM.md).');
+            }
+            const res = await fetch(DRIVE_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if (!data.ok) throw new Error(data.error || 'Sunucu hatası');
+            return data;
+        }
 
-        // Drive erişim token'ını sağla (gerekirse Google girişi aç)
-        function ensureDriveToken(cb) {
-            if (!window.google || !google.accounts || !google.accounts.oauth2) {
-                showToast('Google servisi henüz yüklenmedi, birkaç saniye sonra tekrar deneyin.', 'fa-circle-exclamation text-amber-500');
-                return;
-            }
-            if (GOOGLE_CLIENT_ID.indexOf('BURAYA') === 0) {
-                showToast('Önce Google Client ID ayarlanmalı (README).', 'fa-circle-exclamation text-amber-500');
-                return;
-            }
-            if (!tokenClient) {
-                tokenClient = google.accounts.oauth2.initTokenClient({
-                    client_id: GOOGLE_CLIENT_ID,
-                    scope: 'https://www.googleapis.com/auth/drive.file',
-                    callback: (resp) => {
-                        if (resp && resp.access_token) driveToken = resp.access_token;
-                        if (pendingDriveCb) { const f = pendingDriveCb; pendingDriveCb = null; f(); }
-                    }
-                });
-            }
-            if (driveToken) { cb(); }
-            else { pendingDriveCb = cb; tokenClient.requestAccessToken(); }
+        // Blob -> base64 (data URL'in virgül sonrası kısmı)
+        function blobToBase64(blob) {
+            return new Promise((resolve, reject) => {
+                const r = new FileReader();
+                r.onload = () => resolve(String(r.result).split(',')[1]);
+                r.onerror = reject;
+                r.readAsDataURL(blob);
+            });
         }
 
         // Fotoğrafı yüklemeden önce küçült (hız + yer için)
@@ -881,39 +878,10 @@
             });
         }
 
-        // Drive'da klasörü bul, yoksa oluştur
-        async function ensureDriveFolder(name) {
-            const q = encodeURIComponent(`name='${name}' and mimeType='application/vnd.google-apps.folder' and trashed=false`);
-            let res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)`, {
-                headers: { Authorization: 'Bearer ' + driveToken }
-            });
-            if (res.status === 401) { driveToken = null; throw new Error('Oturum süresi doldu, tekrar deneyin.'); }
-            let data = await res.json();
-            if (data.files && data.files.length) return data.files[0].id;
-            res = await fetch('https://www.googleapis.com/drive/v3/files', {
-                method: 'POST',
-                headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' },
-                body: JSON.stringify({ name: name, mimeType: 'application/vnd.google-apps.folder' })
-            });
-            data = await res.json();
-            return data.id;
-        }
-
-        // Dosyayı Drive'a yükle (multipart)
-        async function uploadToDrive(blob, filename, folderId) {
-            const metadata = { name: filename + '.jpg', parents: folderId ? [folderId] : undefined };
-            const form = new FormData();
-            form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-            form.append('file', blob);
-            const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink', {
-                method: 'POST',
-                headers: { Authorization: 'Bearer ' + driveToken },
-                body: form
-            });
-            if (res.status === 401) { driveToken = null; throw new Error('Oturum süresi doldu, tekrar deneyin.'); }
-            const data = await res.json();
-            if (data.error) throw new Error(data.error.message || 'Yükleme hatası');
-            return data;
+        // Dosyayı Apps Script üzerinden Drive'a yükle
+        async function uploadToDrive(blob, filename) {
+            const dataBase64 = await blobToBase64(blob);
+            return await driveApiPost({ action: 'upload', filename: filename, dataBase64: dataBase64 });
         }
 
         // Kamera ile çekilen fotoğrafı işle
@@ -921,7 +889,7 @@
             const file = e.target.files && e.target.files[0];
             e.target.value = '';
             if (!file) return;
-            ensureDriveToken(async () => {
+            (async () => {
                 try {
                     showToast('Fotoğraf Drive\'a yükleniyor...', 'fa-spinner fa-spin text-indigo-400');
                     const room = rooms.find(r => r.id === activeRoomId);
@@ -929,12 +897,11 @@
                     const n = (currentTempForm.sonFotoNo || 0) + 1;
                     const filename = `${isim} ${n}`;
                     const blob = await compressImage(file);
-                    const folderId = await ensureDriveFolder(DRIVE_FOLDER_NAME);
-                    const res = await uploadToDrive(blob, filename, folderId);
+                    const res = await uploadToDrive(blob, filename);
                     const foto = {
                         id: res.id,
                         name: res.name,
-                        link: res.webViewLink || ('https://drive.google.com/file/d/' + res.id + '/view')
+                        link: res.link
                     };
                     if (!Array.isArray(currentTempForm.fotolar)) currentTempForm.fotolar = [];
                     currentTempForm.fotolar.push(foto);
@@ -951,7 +918,7 @@
                 } catch (err) {
                     showToast('Yükleme başarısız: ' + err.message, 'fa-circle-exclamation text-amber-500');
                 }
-            });
+            })();
         }
 
         // Fotoğraf listesini çiz
@@ -985,10 +952,8 @@
             const idx = rooms.findIndex(r => r.id === activeRoomId);
             if (idx > -1) { rooms[idx].fotolar = [...arr]; saveData(); }
             renderFotolar();
-            if (driveToken && f.id) {
-                fetch('https://www.googleapis.com/drive/v3/files/' + f.id, {
-                    method: 'DELETE', headers: { Authorization: 'Bearer ' + driveToken }
-                }).catch(() => {});
+            if (f.id) {
+                driveApiPost({ action: 'delete', id: f.id }).catch(() => {});
             }
             showToast('Fotoğraf silindi.', 'fa-trash-can text-rose-500');
         }
