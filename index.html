@@ -878,6 +878,18 @@
             });
         }
 
+        // Kullanılmayan en küçük foto numarasını bul (silinenler tekrar kullanılır)
+        function nextFotoNo(fotolar) {
+            const used = new Set();
+            (fotolar || []).forEach(f => {
+                const m = String(f.name || '').match(/(\d+)(?:\.jpe?g)?$/i);
+                if (m) used.add(parseInt(m[1], 10));
+            });
+            let n = 1;
+            while (used.has(n)) n++;
+            return n;
+        }
+
         // Dosyayı Apps Script üzerinden Drive'a yükle (mahal adına göre alt klasöre)
         async function uploadToDrive(blob, filename, subfolder) {
             const dataBase64 = await blobToBase64(blob);
@@ -894,7 +906,7 @@
                     showToast('Fotoğraf Drive\'a yükleniyor...', 'fa-spinner fa-spin text-indigo-400');
                     const room = rooms.find(r => r.id === activeRoomId);
                     const isim = (document.getElementById('edit-room-name').value.trim() || currentTempForm.name || room.name);
-                    const n = (currentTempForm.sonFotoNo || 0) + 1;
+                    const n = nextFotoNo(currentTempForm.fotolar);
                     const filename = `${isim} ${n}`;
                     const blob = await compressImage(file);
                     const res = await uploadToDrive(blob, filename, isim);
