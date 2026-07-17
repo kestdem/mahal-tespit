@@ -4,39 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Zemin Dönüşüm Ön Tespit Formu</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Firebase SDK (compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <!-- Fotoğraf yükleme Google Apps Script Web App üzerinden yapılır (giriş gerekmez) -->
     <style>
-        /* Touch scroll improvements & native mobile look */
         body {
             -webkit-tap-highlight-color: transparent;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-        /* Custom scrollbar for clean design */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 3px;
-        }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
     </style>
 </head>
 <body class="bg-slate-50 min-h-screen text-slate-800 flex flex-col">
-
-    <!-- =========================================================
-         GİRİŞ / KAYIT EKRANI (AUTH GATE)
-         ========================================================= -->
+    <!-- GİRİŞ / KAYIT EKRANI -->
     <div id="view-auth" class="fixed inset-0 z-[100] bg-gradient-to-b from-indigo-900 to-indigo-700 flex items-center justify-center p-5">
         <div class="w-full max-w-sm">
             <div class="text-center text-white mb-6">
@@ -44,7 +29,6 @@
                 <h1 class="font-bold text-2xl">Zemin Dönüşüm Formu</h1>
                 <p class="text-indigo-200 text-sm mt-1">Devam etmek için giriş yapın</p>
             </div>
-
             <div class="bg-white rounded-2xl shadow-xl p-6 space-y-4">
                 <div class="space-y-1.5">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">E-Posta</label>
@@ -56,9 +40,7 @@
                     <input type="password" id="auth-password" placeholder="En az 6 karakter" autocomplete="current-password"
                         class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
                 </div>
-
                 <p id="auth-error" class="hidden text-xs text-rose-600 font-semibold bg-rose-50 rounded-lg px-3 py-2"></p>
-
                 <button onclick="doLogin()" id="btn-login" class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold rounded-xl py-3 flex items-center justify-center space-x-2 shadow-md transition-colors">
                     <i class="fa-solid fa-right-to-bracket"></i>
                     <span>Giriş Yap</span>
@@ -71,13 +53,8 @@
             <p class="text-center text-indigo-200 text-[11px] mt-4">Verileriniz hesabınıza güvenle kaydedilir.</p>
         </div>
     </div>
-
-    <!-- =========================================================
-         UYGULAMA (giriş yapılınca görünür)
-         ========================================================= -->
+    <!-- UYGULAMA -->
     <div id="app-shell" class="hidden flex-grow flex flex-col">
-
-    <!-- HEADER -->
     <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-md mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-2">
@@ -92,14 +69,8 @@
             </div>
         </div>
     </header>
-
-    <!-- MAIN CONTAINER (Constrained to mobile layout but responsive) -->
     <main class="flex-grow max-w-md w-full mx-auto p-4 flex flex-col justify-start">
-
-        <!-- DASHBOARD (ROOMS LIST) VIEW -->
         <div id="view-dashboard" class="space-y-4">
-
-            <!-- Welcome & Quick Stats -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 flex justify-between items-center">
                 <div>
                     <h2 class="font-bold text-slate-900 text-base">Zemin Ön Tespit Sahası</h2>
@@ -111,8 +82,6 @@
                     <span id="total-count" class="text-slate-500 text-xs">0 Tamam</span>
                 </div>
             </div>
-
-            <!-- Add New Room Form -->
             <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-3">
                 <label class="block text-xs font-semibold text-slate-600 uppercase tracking-wider">Hızlı Yeni Mahal Ekle</label>
                 <div class="flex space-x-2">
@@ -123,20 +92,12 @@
                     </button>
                 </div>
             </div>
-
-            <!-- Search / Filter -->
             <div class="relative">
                 <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
                 <input type="text" id="search-input" oninput="filterRooms()" placeholder="Mahal ara..."
                     class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 shadow-sm transition-all">
             </div>
-
-            <!-- Rooms List -->
-            <div class="space-y-2.5" id="rooms-list-container">
-                <!-- Dynamic Content via JS -->
-            </div>
-
-            <!-- Actions / Report -->
+            <div class="space-y-2.5" id="rooms-list-container"></div>
             <div class="pt-2 flex flex-col space-y-2.5">
                 <button onclick="copySummaryReport()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800 text-white font-semibold rounded-xl py-3 px-4 flex items-center justify-center space-x-2 transition-colors shadow-sm">
                     <i class="fa-solid fa-clipboard-list"></i>
@@ -154,10 +115,7 @@
                 </div>
             </div>
         </div>
-
-        <!-- ACTIVE ROOM FORM VIEW -->
         <div id="view-form" class="hidden space-y-4 pb-12">
-            <!-- Back & Room Title Header -->
             <div class="flex items-center justify-between">
                 <button onclick="closeForm()" class="bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-700 px-3.5 py-2 rounded-xl text-sm font-semibold flex items-center space-x-1 transition-all">
                     <i class="fa-solid fa-chevron-left"></i>
@@ -168,17 +126,11 @@
                     <span class="text-xs text-indigo-600 font-medium">Ön Tespit Formu</span>
                 </div>
             </div>
-
-            <!-- FORM CARD -->
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 space-y-5">
-
-                <!-- Room Name Edit -->
                 <div class="space-y-1.5">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Mahal İsmini Düzenle</label>
                     <input type="text" id="edit-room-name" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all">
                 </div>
-
-                <!-- Mahal Alanı (m²) -->
                 <div class="space-y-1.5">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Mahal Alanı (m²)</label>
                     <div class="relative">
@@ -187,39 +139,28 @@
                         <span class="absolute right-3.5 top-2.5 text-sm font-bold text-slate-400">m²</span>
                     </div>
                 </div>
-
                 <hr class="border-slate-100">
-
-                <!-- 1. Mevcut Zemin Türü -->
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Mevcut Zemin Türü</label>
                     <div class="grid grid-cols-2 gap-2" id="zemin-turu-container">
                         <button type="button" onclick="selectChip('zeminTuru', 'Şap')" data-val="Şap" class="chip-btn border border-slate-200 rounded-xl p-3 text-sm font-medium flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 active:scale-95 transition-all">
-                            <span class="w-2 h-2 rounded-full bg-slate-400"></span>
-                            <span>Şap</span>
+                            <span class="w-2 h-2 rounded-full bg-slate-400"></span><span>Şap</span>
                         </button>
                         <button type="button" onclick="selectChip('zeminTuru', 'Seramik')" data-val="Seramik" class="chip-btn border border-slate-200 rounded-xl p-3 text-sm font-medium flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 active:scale-95 transition-all">
-                            <span class="w-2 h-2 rounded-full bg-amber-500"></span>
-                            <span>Seramik</span>
+                            <span class="w-2 h-2 rounded-full bg-amber-500"></span><span>Seramik</span>
                         </button>
                         <button type="button" onclick="selectChip('zeminTuru', 'Eski Parke')" data-val="Eski Parke" class="chip-btn border border-slate-200 rounded-xl p-3 text-sm font-medium flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 active:scale-95 transition-all">
-                            <span class="w-2 h-2 rounded-full bg-orange-700"></span>
-                            <span>Eski Parke</span>
+                            <span class="w-2 h-2 rounded-full bg-orange-700"></span><span>Eski Parke</span>
                         </button>
                         <button type="button" onclick="selectChip('zeminTuru', 'Halı')" data-val="Halı" class="chip-btn border border-slate-200 rounded-xl p-3 text-sm font-medium flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 active:scale-95 transition-all">
-                            <span class="w-2 h-2 rounded-full bg-blue-500"></span>
-                            <span>Halı</span>
+                            <span class="w-2 h-2 rounded-full bg-blue-500"></span><span>Halı</span>
                         </button>
                         <button type="button" onclick="selectChip('zeminTuru', 'PVC')" data-val="PVC" class="chip-btn border border-slate-200 rounded-xl p-3 text-sm font-medium flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 active:scale-95 transition-all">
-                            <span class="w-2 h-2 rounded-full bg-teal-500"></span>
-                            <span>PVC</span>
+                            <span class="w-2 h-2 rounded-full bg-teal-500"></span><span>PVC</span>
                         </button>
                     </div>
                 </div>
-
                 <hr class="border-slate-100">
-
-                <!-- 2. Zemin Deformasyon Derecesi -->
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Zemin Deformasyon Derecesi</label>
@@ -228,18 +169,11 @@
                     <div class="pt-1">
                         <input type="range" id="deformasyon-slider" min="1" max="5" value="1" oninput="updateDeformasyonLabel(this.value)" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600">
                         <div class="flex justify-between text-[10px] text-slate-400 px-1 pt-1.5 font-bold">
-                            <span>1 (Sorunsuz)</span>
-                            <span>2</span>
-                            <span>3 (Orta)</span>
-                            <span>4</span>
-                            <span>5 (Ağır Hasarlı)</span>
+                            <span>1 (Sorunsuz)</span><span>2</span><span>3 (Orta)</span><span>4</span><span>5 (Ağır Hasarlı)</span>
                         </div>
                     </div>
                 </div>
-
                 <hr class="border-slate-100">
-
-                <!-- 3. Şap/Tesviye Gerekli mi? -->
                 <div class="flex items-center justify-between py-1">
                     <div class="space-y-0.5">
                         <label class="text-sm font-bold text-slate-800">Şap / Tesviye Gerekli mi?</label>
@@ -250,10 +184,7 @@
                         <button type="button" onclick="setTesviye(false)" id="tesviye-no" class="px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all">Hayır</button>
                     </div>
                 </div>
-
                 <hr class="border-slate-100">
-
-                <!-- 4. Süpürgelik Durumu -->
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Süpürgelik Durumu</label>
                     <div class="grid grid-cols-2 gap-2" id="supurgelik-container">
@@ -263,10 +194,7 @@
                         <button type="button" onclick="selectChip('supurgelik', 'Yok')" data-val="Yok" class="chip-btn border border-slate-200 rounded-xl p-2.5 text-xs font-medium bg-slate-50 hover:bg-slate-100 active:scale-95 transition-all text-center">Süpürgelik Yok</button>
                     </div>
                 </div>
-
                 <hr class="border-slate-100">
-
-                <!-- 5. Süpürgelik Duvar Hattı Düzgün mü? -->
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Süpürgelik Duvar Hattı</label>
                     <div class="grid grid-cols-3 gap-1.5" id="duvar-hatti-container">
@@ -275,10 +203,7 @@
                         <button type="button" onclick="selectChip('duvarHatti', 'Değişken')" data-val="Değişken" class="chip-btn border border-slate-200 rounded-xl py-2 text-[11px] font-bold bg-slate-50 active:scale-95 transition-all text-center">Değişken</button>
                     </div>
                 </div>
-
                 <hr class="border-slate-100">
-
-                <!-- 6. Kapı Altı Kesimi Gerekli mi? -->
                 <div class="space-y-2">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Kapı Altı Kesimi Gerekli mi?</label>
                     <div class="grid grid-cols-3 gap-1.5" id="kapi-kesim-container">
@@ -287,24 +212,17 @@
                         <button type="button" onclick="selectChip('kapiKesim', 'Belirsiz')" data-val="Belirsiz" class="chip-btn border border-slate-200 rounded-xl py-2 text-[11px] font-bold bg-slate-50 active:scale-95 transition-all text-center">Belirsiz</button>
                     </div>
                 </div>
-
                 <hr class="border-slate-100">
-
-                <!-- 7. Ek Notlar -->
                 <div class="space-y-1.5">
                     <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Ek Notlar & Özel Durumlar</label>
                     <textarea id="form-notlar" placeholder="Kot farkı, nem, özel geçiş profili gereksinimleri vb..." rows="3" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-all resize-none"></textarea>
                 </div>
-
                 <hr class="border-slate-100">
-
-                <!-- 8. Fotoğraflar (Google Drive) -->
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Fotoğraflar</label>
                         <span class="text-[10px] text-slate-400 font-medium"><i class="fa-brands fa-google-drive"></i> Google Drive</span>
                     </div>
-                    <!-- Kamerayı açan gizli input -->
                     <input type="file" accept="image/*" capture="environment" id="foto-input" class="hidden" onchange="handleFotoCapture(event)">
                     <button type="button" onclick="document.getElementById('foto-input').click()" class="w-full bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl py-3 flex items-center justify-center space-x-2 border border-indigo-100 active:scale-95 transition-all">
                         <i class="fa-solid fa-camera"></i>
@@ -314,10 +232,7 @@
                         <p class="text-xs text-slate-400">Henüz fotoğraf eklenmedi.</p>
                     </div>
                 </div>
-
                 <hr class="border-slate-100">
-
-                <!-- 9. Çekilen Fotoğraflar Galerisi -->
                 <div class="space-y-2">
                     <div class="flex justify-between items-center">
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Çekilen Fotoğraflar</label>
@@ -327,10 +242,7 @@
                         <p class="text-xs text-slate-400 col-span-3">Henüz fotoğraf çekilmedi.</p>
                     </div>
                 </div>
-
             </div>
-
-            <!-- Save & Delete Actions -->
             <div class="space-y-2">
                 <button onclick="saveActiveRoom()" class="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-bold rounded-xl py-3.5 flex items-center justify-center space-x-2 shadow-md transition-colors">
                     <i class="fa-solid fa-cloud-arrow-up"></i>
@@ -342,31 +254,18 @@
                 </button>
             </div>
         </div>
-
     </main>
-    </div><!-- /app-shell -->
-
-    <!-- FOTOĞRAF BÜYÜK ÖNİZLEME (LIGHTBOX) -->
+    </div>
     <div id="foto-lightbox" onclick="closeLightbox()" class="hidden fixed inset-0 z-[120] bg-black/85 flex items-center justify-center p-4">
         <button onclick="closeLightbox()" class="absolute top-4 right-4 text-white/80 hover:text-white w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-lg">
             <i class="fa-solid fa-xmark"></i>
         </button>
         <img id="foto-lightbox-img" src="" alt="" class="max-w-full max-h-[85vh] rounded-xl object-contain">
     </div>
-
-    <!-- NOTIFICATION POPUP -->
     <div id="toast" class="fixed bottom-5 left-1/2 transform -translate-x-1/2 bg-slate-900 text-white text-xs font-semibold px-4 py-3 rounded-xl shadow-lg flex items-center space-x-2 transition-all duration-300 opacity-0 pointer-events-none z-[110]">
         <i id="toast-icon" class="fa-solid fa-circle-check text-emerald-400"></i>
         <span id="toast-message">Kopyalandı!</span>
     </div>
-
-    <!-- =========================================================
-         FIREBASE CONFIG  ->  BURAYI KENDI PROJENIZLE DOLDURUN
-         Firebase Console > Proje Ayarlari > "Web uygulamasi" bolumunden
-         alacaginiz degerleri asagiya yapistirin.
-         Ayrica: Authentication > Sign-in method > "E-posta/Sifre" ACIK olmali,
-         Realtime Database olusturulmus olmali.
-         ========================================================= -->
     <script>
         const firebaseConfig = {
             apiKey: "AIzaSyCcGoe2FAuH7M-5JMnxWeF0EWjJisi_030",
@@ -377,44 +276,27 @@
             messagingSenderId: "769571041433",
             appId: "1:769571041433:web:62d0ef3ac61d79f08e4808"
         };
-
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const db = firebase.database();
-
-        // ⚠️ GOOGLE DRIVE: Apps Script Web App URL'i (README_KURULUM.md'deki adımlarla alın)
-        // Ziyaretçi giriş yapmaz; fotoğraflar bu adres üzerinden SİZİN Drive'ınıza kaydedilir.
         const DRIVE_ENDPOINT = "https://script.google.com/macros/s/AKfycbyo9W-yZ7V0JDcAKbLa3TIViPl6yrpHR8i9IEg67sRJ1HCW6NT3s0j5kfCWFAReUhPi/exec";
-        // Fotoğrafların kaydedileceği Drive klasör adı (Code.gs ile aynı olmalı)
         const DRIVE_FOLDER_NAME = "Mahal Kontrol Fotoğraflar";
     </script>
-
-    <!-- APP SCRIPT -->
     <script>
-        // State variables
         let rooms = [];
         let activeRoomId = null;
         let currentUser = null;
-
-        // Default layout/rooms for a brand new account
         const defaultRooms = [
             { id: "1", name: "Salon", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", fotolar: [], sonFotoNo: 0, completed: false },
             { id: "2", name: "Mutfak", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", fotolar: [], sonFotoNo: 0, completed: false },
             { id: "3", name: "Antre / Hol", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", fotolar: [], sonFotoNo: 0, completed: false },
             { id: "4", name: "Yatak Odası", m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", fotolar: [], sonFotoNo: 0, completed: false }
         ];
-
-        // ============================================================
-        //  AUTH (GIRIS / KAYIT / CIKIS)
-        // ============================================================
         function showAuthError(msg) {
             const el = document.getElementById('auth-error');
-            el.innerText = msg;
-            el.classList.remove('hidden');
+            el.innerText = msg; el.classList.remove('hidden');
         }
-        function clearAuthError() {
-            document.getElementById('auth-error').classList.add('hidden');
-        }
+        function clearAuthError() { document.getElementById('auth-error').classList.add('hidden'); }
         function mapAuthError(code) {
             const m = {
                 'auth/invalid-email': 'Geçersiz e-posta adresi.',
@@ -427,32 +309,21 @@
             };
             return m[code] || 'Bir hata oluştu. Tekrar deneyin.';
         }
-
         function doLogin() {
             clearAuthError();
             const email = document.getElementById('auth-email').value.trim();
             const pass = document.getElementById('auth-password').value;
             if (!email || !pass) { showAuthError('E-posta ve şifre gerekli.'); return; }
-            auth.signInWithEmailAndPassword(email, pass)
-                .catch(err => showAuthError(mapAuthError(err.code)));
+            auth.signInWithEmailAndPassword(email, pass).catch(err => showAuthError(mapAuthError(err.code)));
         }
-
         function doRegister() {
             clearAuthError();
             const email = document.getElementById('auth-email').value.trim();
             const pass = document.getElementById('auth-password').value;
             if (!email || !pass) { showAuthError('E-posta ve şifre gerekli.'); return; }
-            auth.createUserWithEmailAndPassword(email, pass)
-                .catch(err => showAuthError(mapAuthError(err.code)));
+            auth.createUserWithEmailAndPassword(email, pass).catch(err => showAuthError(mapAuthError(err.code)));
         }
-
-        function doLogout() {
-            if (confirm('Çıkış yapmak istediğinize emin misiniz?')) {
-                auth.signOut();
-            }
-        }
-
-        // Oturum durumu değiştikçe uygulamayı aç/kapat
+        function doLogout() { if (confirm('Çıkış yapmak istediğinize emin misiniz?')) { auth.signOut(); } }
         auth.onAuthStateChanged(function(user) {
             if (user) {
                 currentUser = user;
@@ -461,90 +332,54 @@
                 document.getElementById('user-email-label').innerText = user.email;
                 loadUserData();
             } else {
-                currentUser = null;
-                rooms = [];
+                currentUser = null; rooms = [];
                 document.getElementById('app-shell').classList.add('hidden');
                 document.getElementById('view-auth').classList.remove('hidden');
                 document.getElementById('auth-password').value = '';
             }
         });
-
-        // ============================================================
-        //  VERI: REALTIME DATABASE (kullanici UID altinda)
-        // ============================================================
-        function userRoomsRef() {
-            return db.ref('users/' + currentUser.uid + '/rooms');
-        }
-
+        function userRoomsRef() { return db.ref('users/' + currentUser.uid + '/rooms'); }
         function loadUserData() {
             userRoomsRef().once('value').then(snapshot => {
                 const val = snapshot.val();
-                if (val && Array.isArray(val) && val.length) {
-                    rooms = val;
-                } else {
-                    // Yeni hesap: varsayilan mahalleri olustur ve kaydet
-                    rooms = JSON.parse(JSON.stringify(defaultRooms));
-                    saveData();
-                }
+                if (val && Array.isArray(val) && val.length) { rooms = val; }
+                else { rooms = JSON.parse(JSON.stringify(defaultRooms)); saveData(); }
                 renderDashboard();
             }).catch(err => {
                 showToast('Veri yüklenemedi: ' + err.message, 'fa-circle-exclamation text-amber-500');
-                rooms = JSON.parse(JSON.stringify(defaultRooms));
-                renderDashboard();
+                rooms = JSON.parse(JSON.stringify(defaultRooms)); renderDashboard();
             });
         }
-
-        // Buluta kaydet
         function saveData() {
             if (!currentUser) return;
             userRoomsRef().set(rooms).catch(err => {
                 showToast('Buluta kaydedilemedi: ' + err.message, 'fa-circle-exclamation text-amber-500');
             });
         }
-
-        // Show feedback to user
         function showToast(message, iconClass = "fa-circle-check text-emerald-400") {
             const toast = document.getElementById('toast');
-            const tMessage = document.getElementById('toast-message');
-            const tIcon = document.getElementById('toast-icon');
-
-            tMessage.innerText = message;
-            tIcon.className = `fa-solid ${iconClass}`;
-
+            document.getElementById('toast-message').innerText = message;
+            document.getElementById('toast-icon').className = `fa-solid ${iconClass}`;
             toast.classList.remove('opacity-0', 'pointer-events-none');
             toast.classList.add('opacity-100');
-
             setTimeout(() => {
                 toast.classList.remove('opacity-100');
                 toast.classList.add('opacity-0', 'pointer-events-none');
             }, 2500);
         }
-
-        // Render Dashboard Lists and Badges
         function renderDashboard() {
             const container = document.getElementById('rooms-list-container');
             container.innerHTML = '';
-
             let completedCount = 0;
             rooms.forEach(room => {
                 if (room.completed) completedCount++;
-
-                // Build status text & icons indicators
                 let statusBadge = `<span class="text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-full">Tespit Yapılmadı</span>`;
                 if (room.completed) {
-                    statusBadge = `<span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full flex items-center space-x-1">
-                        <i class="fa-solid fa-check"></i> <span>Tamamlandı</span>
-                    </span>`;
+                    statusBadge = `<span class="text-[10px] bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded-full flex items-center space-x-1"><i class="fa-solid fa-check"></i> <span>Tamamlandı</span></span>`;
                 }
-
                 const item = document.createElement('div');
-                item.className = `p-4 rounded-2xl border transition-all duration-200 flex items-center justify-between cursor-pointer active:scale-[0.98] ${
-                    room.completed
-                    ? 'bg-white border-slate-200 hover:border-emerald-300 shadow-sm'
-                    : 'bg-white border-dashed border-slate-200 hover:border-indigo-300 shadow-sm'
-                }`;
+                item.className = `p-4 rounded-2xl border transition-all duration-200 flex items-center justify-between cursor-pointer active:scale-[0.98] ${room.completed ? 'bg-white border-slate-200 hover:border-emerald-300 shadow-sm' : 'bg-white border-dashed border-slate-200 hover:border-indigo-300 shadow-sm'}`;
                 item.setAttribute('onclick', `openRoomForm('${room.id}')`);
-
                 item.innerHTML = `
                     <div class="flex items-center space-x-3.5 flex-grow min-w-0">
                         <div class="w-9 h-9 rounded-xl flex items-center justify-center ${room.completed ? 'bg-emerald-50 text-emerald-600' : 'bg-slate-100 text-slate-400'}">
@@ -560,122 +395,58 @@
                             </div>
                         </div>
                     </div>
-                    <div class="flex items-center space-x-2">
-                        <i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i>
-                    </div>
-                `;
+                    <div class="flex items-center space-x-2"><i class="fa-solid fa-chevron-right text-slate-300 text-xs"></i></div>`;
                 container.appendChild(item);
             });
-
-            // Update stats indicators
             document.getElementById('total-badge').innerText = `${rooms.length} Mahal`;
             document.getElementById('total-count').innerText = `${rooms.length} Mahal`;
             document.getElementById('completed-count').innerText = completedCount;
         }
-
-        // Add Room Button Flow
         function addRoom() {
             const input = document.getElementById('new-room-input');
             const name = input.value.trim();
-            if (!name) {
-                showToast("Lütfen bir mahal adı yazın!", "fa-circle-exclamation text-amber-500");
-                return;
-            }
-
-            const newRoom = {
-                id: Date.now().toString(),
-                name: name,
-                m2: "",
-                zeminTuru: "",
-                deformasyon: 1,
-                tesviye: null,
-                supurgelik: "",
-                duvarHatti: "",
-                kapiKesim: "",
-                notlar: "",
-                fotolar: [],
-                sonFotoNo: 0,
-                completed: false
-            };
-
-            rooms.push(newRoom);
-            saveData();
-            renderDashboard();
-            input.value = "";
-            showToast(`${name} listeye eklendi.`);
+            if (!name) { showToast("Lütfen bir mahal adı yazın!", "fa-circle-exclamation text-amber-500"); return; }
+            const newRoom = { id: Date.now().toString(), name: name, m2: "", zeminTuru: "", deformasyon: 1, tesviye: null, supurgelik: "", duvarHatti: "", kapiKesim: "", notlar: "", fotolar: [], sonFotoNo: 0, completed: false };
+            rooms.push(newRoom); saveData(); renderDashboard();
+            input.value = ""; showToast(`${name} listeye eklendi.`);
         }
-
-        // Filter search input
         function filterRooms() {
             const query = document.getElementById('search-input').value.toLowerCase();
             const items = document.getElementById('rooms-list-container').children;
-
             rooms.forEach((room, index) => {
-                if (room.name.toLowerCase().includes(query)) {
-                    items[index].classList.remove('hidden');
-                } else {
-                    items[index].classList.add('hidden');
-                }
+                if (room.name.toLowerCase().includes(query)) items[index].classList.remove('hidden');
+                else items[index].classList.add('hidden');
             });
         }
-
-        // Navigation: Open Room Form Edit
-        let currentTempForm = {}; // Hold temp states before save
-
+        let currentTempForm = {};
         function openRoomForm(id) {
             activeRoomId = id;
             const room = rooms.find(r => r.id === id);
             if (!room) return;
-
-            // Clone to temp
             currentTempForm = { ...room };
-            // Fotoğraf dizisini ayrı kopyala (referans paylaşmasın)
             currentTempForm.fotolar = Array.isArray(room.fotolar) ? [...room.fotolar] : [];
             currentTempForm.sonFotoNo = room.sonFotoNo || 0;
-
-            // Fill elements
             document.getElementById('form-room-title').innerText = room.name;
             document.getElementById('edit-room-name').value = room.name;
             document.getElementById('edit-room-m2').value = room.m2 || "";
             renderFotolar();
-
-            // Render Selected Chips
             updateFormUIParents();
-
-            // Set deformation slider
             const slider = document.getElementById('deformasyon-slider');
             slider.value = room.deformasyon;
             updateDeformasyonLabel(room.deformasyon);
-
-            // Set Tesviye buttons
             setTesviye(room.tesviye);
-
-            // Set Notes
             document.getElementById('form-notlar').value = room.notlar || "";
-
-            // Switch views
             document.getElementById('view-dashboard').classList.add('hidden');
             document.getElementById('view-form').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
-        // Handle Radio Selection in CSS/HTML Chips
-        function selectChip(field, val) {
-            currentTempForm[field] = val;
-            updateFormUIParents();
-        }
-
+        function selectChip(field, val) { currentTempForm[field] = val; updateFormUIParents(); }
         function updateFormUIParents() {
-            // 1. Zemin Türü Chips
             styleChips('zemin-turu-container', currentTempForm.zeminTuru);
-            // 2. Süpürgelik Chips
             styleChips('supurgelik-container', currentTempForm.supurgelik);
-            // 3. Duvar Hattı Chips
             styleChips('duvar-hatti-container', currentTempForm.duvarHatti);
-            // 4. Kapı Kesim Chips
             styleChips('kapi-kesim-container', currentTempForm.kapiKesim);
         }
-
         function styleChips(containerId, activeVal) {
             const container = document.getElementById(containerId);
             const buttons = container.querySelectorAll('.chip-btn');
@@ -685,7 +456,6 @@
                     btn.className = "chip-btn border-2 border-indigo-600 bg-indigo-50 text-indigo-900 rounded-xl p-3 text-sm font-bold flex items-center space-x-2 transition-all shadow-sm";
                 } else {
                     btn.className = "chip-btn border border-slate-200 rounded-xl p-3 text-sm font-medium flex items-center space-x-2 bg-slate-50 hover:bg-slate-100 active:scale-95 transition-all";
-                    // Special case for narrower grids
                     if (containerId === 'duvar-hatti-container' || containerId === 'kapi-kesim-container') {
                         btn.className = "chip-btn border border-slate-200 rounded-xl py-2 text-[11px] font-semibold bg-slate-50 hover:bg-slate-100 active:scale-95 transition-all text-center";
                     }
@@ -695,8 +465,6 @@
                 }
             });
         }
-
-        // Slider deformation labels update
         function updateDeformasyonLabel(val) {
             let desc = "";
             switch (parseInt(val)) {
@@ -709,13 +477,10 @@
             document.getElementById('deformasyon-value').innerText = desc;
             currentTempForm.deformasyon = parseInt(val);
         }
-
-        // Handle Tesviye Switch
         function setTesviye(val) {
             currentTempForm.tesviye = val;
             const btnYes = document.getElementById('tesviye-yes');
             const btnNo = document.getElementById('tesviye-no');
-
             if (val === true) {
                 btnYes.className = "px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all bg-indigo-600 text-white shadow-sm";
                 btnNo.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:text-slate-800";
@@ -727,58 +492,37 @@
                 btnNo.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-500 hover:text-slate-800";
             }
         }
-
-        // Close View without Saving
         function closeForm() {
             activeRoomId = null;
             document.getElementById('view-form').classList.add('hidden');
             document.getElementById('view-dashboard').classList.remove('hidden');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-
-        // Save Current Temp Form back to State array
         function saveActiveRoom() {
             const index = rooms.findIndex(r => r.id === activeRoomId);
             if (index === -1) return;
-
-            // Apply name and notes input value
             currentTempForm.name = document.getElementById('edit-room-name').value.trim() || currentTempForm.name;
             currentTempForm.m2 = document.getElementById('edit-room-m2').value.trim();
             currentTempForm.notlar = document.getElementById('form-notlar').value.trim();
-
-            // Set completed true if zeminTuru is defined at least
-            if (currentTempForm.zeminTuru !== "") {
-                currentTempForm.completed = true;
-            }
-
-            // Save to array
+            if (currentTempForm.zeminTuru !== "") { currentTempForm.completed = true; }
             rooms[index] = { ...currentTempForm };
-            saveData();
-            renderDashboard();
-
+            saveData(); renderDashboard();
             showToast(`${currentTempForm.name} kaydedildi!`);
             closeForm();
         }
-
-        // Delete Room From State
         function deleteActiveRoom() {
             if (confirm("Bu mahali ve kaydedilmiş tüm verilerini silmek istediğinize emin misiniz?")) {
                 rooms = rooms.filter(r => r.id !== activeRoomId);
-                saveData();
-                renderDashboard();
+                saveData(); renderDashboard();
                 showToast("Mahal listeden çıkarıldı.", "fa-trash-can text-rose-500");
                 closeForm();
             }
         }
-
-        // COPY SUMMARY REPORT FOR WHATSAPP/EMAIL
         function copySummaryReport() {
             let report = "🛠️ *ZEMİN DÖNÜŞÜMÜ ÖN TESPİT RAPORU* 🛠️\n";
             report += `Tarih: ${new Date().toLocaleDateString('tr-TR')}\n`;
             report += "--------------------------------------\n\n";
-
-            let addedCount = 0;
-            let toplamM2 = 0;
+            let addedCount = 0, toplamM2 = 0;
             rooms.forEach((room, idx) => {
                 if (room.completed) {
                     addedCount++;
@@ -792,9 +536,7 @@
                     report += `• Süpürgelik: ${room.supurgelik || 'Belirtilmedi'}\n`;
                     report += `• Duvar Hattı: ${room.duvarHatti || 'Belirtilmedi'}\n`;
                     report += `• Kapı Kesimi: ${room.kapiKesim || 'Belirtilmedi'}\n`;
-                    if (room.notlar) {
-                        report += `• Ek Notlar: ${room.notlar}\n`;
-                    }
+                    if (room.notlar) { report += `• Ek Notlar: ${room.notlar}\n`; }
                     if (room.fotolar && room.fotolar.length) {
                         report += `• Fotoğraflar (${room.fotolar.length}):\n`;
                         room.fotolar.forEach(f => { report += `   - ${f.name}: ${f.link}\n`; });
@@ -802,60 +544,30 @@
                     report += "\n";
                 }
             });
-
-            if (addedCount === 0) {
-                showToast("Özet için en az 1 mahalin verisini doldurmalısınız!", "fa-circle-exclamation text-amber-500");
-                return;
-            }
-
+            if (addedCount === 0) { showToast("Özet için en az 1 mahalin verisini doldurmalısınız!", "fa-circle-exclamation text-amber-500"); return; }
             report += "--------------------------------------\n";
             report += `📐 *TOPLAM ALAN: ${toplamM2.toFixed(1)} m²* (${addedCount} mahal)\n`;
-
-            // Copy to Clipboard
             navigator.clipboard.writeText(report).then(() => {
                 showToast("Rapor WhatsApp için panoya kopyalandı!");
-            }).catch(err => {
-                alert("Kopyalanamadı, lütfen manuel kopyalayın. Rapor Çıktısı:\n\n" + report);
-            });
+            }).catch(err => { alert("Kopyalanamadı, lütfen manuel kopyalayın. Rapor Çıktısı:\n\n" + report); });
         }
-
-        // EXPORT TO EXCEL COMPATIBLE CSV
         function downloadCSV() {
-            let csvContent = "﻿"; // BOM for Turkish character support in Excel
+            let csvContent = "﻿";
             csvContent += "Mahal Adı;Alan (m²);Mevcut Zemin Türü;Deformasyon Derecesi (1-5);Şap Gerekli mi?;Süpürgelik;Süpürgelik Duvar Hattı;Kapı Altı Kesimi;Ek Notlar\r\n";
-
             rooms.forEach(room => {
                 const tesviyeStr = room.tesviye === true ? "Evet" : room.tesviye === false ? "Hayır" : "";
-                const row = [
-                    room.name,
-                    room.m2 || "",
-                    room.zeminTuru || "",
-                    room.deformasyon,
-                    tesviyeStr,
-                    room.supurgelik || "",
-                    room.duvarHatti || "",
-                    room.kapiKesim || "",
-                    (room.notlar || "").replace(/;/g, ",").replace(/\r?\n|\r/g, " ") // escape semicollon
-                ];
+                const row = [ room.name, room.m2 || "", room.zeminTuru || "", room.deformasyon, tesviyeStr, room.supurgelik || "", room.duvarHatti || "", room.kapiKesim || "", (room.notlar || "").replace(/;/g, ",").replace(/\r?\n|\r/g, " ") ];
                 csvContent += row.join(";") + "\r\n";
             });
-
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
             const url = URL.createObjectURL(blob);
             link.setAttribute("href", url);
             link.setAttribute("download", `zemin_tespit_raporu_${new Date().toISOString().slice(0,10)}.csv`);
             link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            document.body.appendChild(link); link.click(); document.body.removeChild(link);
             showToast("CSV dosyası indirildi.");
         }
-
-        // ============================================================
-        //  GOOGLE DRIVE FOTOĞRAF YÜKLEME
-        // ============================================================
-        // Apps Script Web App'e istek gönderen yardımcı (CORS preflight'ı önlemek için text/plain)
         async function driveApiPost(payload) {
             if (!DRIVE_ENDPOINT || DRIVE_ENDPOINT.indexOf('BURAYA') === 0) {
                 throw new Error('Drive adresi ayarlanmamış (README_KURULUM.md).');
@@ -869,8 +581,6 @@
             if (!data.ok) throw new Error(data.error || 'Sunucu hatası');
             return data;
         }
-
-        // Blob -> base64 (data URL'in virgül sonrası kısmı)
         function blobToBase64(blob) {
             return new Promise((resolve, reject) => {
                 const r = new FileReader();
@@ -879,8 +589,6 @@
                 r.readAsDataURL(blob);
             });
         }
-
-        // Fotoğrafı yüklemeden önce küçült (hız + yer için)
         function compressImage(file, maxDim = 1600, quality = 0.8) {
             return new Promise((resolve) => {
                 const img = new Image();
@@ -898,8 +606,6 @@
                 img.src = url;
             });
         }
-
-        // Kullanılmayan en küçük foto numarasını bul (silinenler tekrar kullanılır)
         function nextFotoNo(fotolar) {
             const used = new Set();
             (fotolar || []).forEach(f => {
@@ -910,14 +616,10 @@
             while (used.has(n)) n++;
             return n;
         }
-
-        // Dosyayı Apps Script üzerinden Drive'a yükle (mahal adına göre alt klasöre)
         async function uploadToDrive(blob, filename, subfolder) {
             const dataBase64 = await blobToBase64(blob);
             return await driveApiPost({ action: 'upload', filename: filename, subfolder: subfolder, dataBase64: dataBase64 });
         }
-
-        // Kamera ile çekilen fotoğrafı işle
         function handleFotoCapture(e) {
             const file = e.target.files && e.target.files[0];
             e.target.value = '';
@@ -931,15 +633,10 @@
                     const filename = `${isim} ${n}`;
                     const blob = await compressImage(file);
                     const res = await uploadToDrive(blob, filename, isim);
-                    const foto = {
-                        id: res.id,
-                        name: res.name,
-                        link: res.link
-                    };
+                    const foto = { id: res.id, name: res.name, link: res.link };
                     if (!Array.isArray(currentTempForm.fotolar)) currentTempForm.fotolar = [];
                     currentTempForm.fotolar.push(foto);
                     currentTempForm.sonFotoNo = n;
-                    // Fotoğrafı anında kalıcı kaydet (form Kaydet'ten bağımsız)
                     const idx = rooms.findIndex(r => r.id === activeRoomId);
                     if (idx > -1) {
                         rooms[idx].fotolar = [...currentTempForm.fotolar];
@@ -953,16 +650,11 @@
                 }
             })();
         }
-
-        // Fotoğraf listesini çiz
         function renderFotolar() {
-            renderGaleri();   // Galeri önizlemesini de güncelle
+            renderGaleri();
             const c = document.getElementById('foto-list');
             const arr = currentTempForm.fotolar || [];
-            if (!arr.length) {
-                c.innerHTML = '<p class="text-xs text-slate-400">Henüz fotoğraf eklenmedi.</p>';
-                return;
-            }
+            if (!arr.length) { c.innerHTML = '<p class="text-xs text-slate-400">Henüz fotoğraf eklenmedi.</p>'; return; }
             c.innerHTML = arr.map((f, i) => `
                 <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl px-3 py-2">
                     <div class="flex items-center space-x-2 min-w-0">
@@ -975,28 +667,21 @@
                     </div>
                 </div>`).join('');
         }
-
-        // Çekilen fotoğrafların küçük önizleme galerisi
         function renderGaleri() {
             const g = document.getElementById('foto-galeri');
             const countEl = document.getElementById('foto-galeri-count');
             if (!g) return;
             const arr = currentTempForm.fotolar || [];
             if (countEl) countEl.innerText = `${arr.length} fotoğraf`;
-
-            if (!arr.length) {
-                g.innerHTML = '<p class="text-xs text-slate-400 col-span-3">Henüz fotoğraf çekilmedi.</p>';
-                return;
-            }
-
+            if (!arr.length) { g.innerHTML = '<p class="text-xs text-slate-400 col-span-3">Henüz fotoğraf çekilmedi.</p>'; return; }
             g.innerHTML = arr.map((f, i) => `
                 <div class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
                     <i class="fa-solid fa-image text-slate-300 text-xl"></i>
                     <img src="https://drive.google.com/thumbnail?id=${f.id}&sz=w600"
-                         alt="${f.name}" loading="lazy"
+                         alt="${f.name}" loading="lazy" data-fid="${f.id}"
                          onclick="openLightbox('${f.id}')"
                          class="w-full h-full object-cover cursor-pointer relative z-10"
-                         onerror="this.style.display='none'">
+                         onerror="fixThumb(this)">
                     <button type="button" onclick="deleteFoto(${i})"
                         class="absolute top-1 right-1 z-20 bg-black/50 hover:bg-black/70 text-white w-6 h-6 rounded-full flex items-center justify-center text-[11px] active:scale-95 transition-all">
                         <i class="fa-solid fa-trash-can"></i>
@@ -1004,12 +689,17 @@
                     <span class="absolute bottom-0 left-0 right-0 z-20 bg-black/45 text-white text-[9px] px-1 py-0.5 truncate pointer-events-none">${f.name}</span>
                 </div>`).join('');
         }
-
-        // Fotoğrafı büyük önizle (lightbox)
+        function fixThumb(img) {
+            const id = img.getAttribute('data-fid');
+            if (!id || img.dataset.retried) { img.style.display = 'none'; return; }
+            img.dataset.retried = '1';
+            driveApiPost({ action: 'share', id: id })
+                .then(() => { img.style.display = ''; img.src = 'https://drive.google.com/thumbnail?id=' + id + '&sz=w600&t=' + Date.now(); })
+                .catch(() => { img.style.display = 'none'; });
+        }
         function openLightbox(id) {
             const box = document.getElementById('foto-lightbox');
-            const img = document.getElementById('foto-lightbox-img');
-            img.src = `https://drive.google.com/thumbnail?id=${id}&sz=w1600`;
+            document.getElementById('foto-lightbox-img').src = `https://drive.google.com/thumbnail?id=${id}&sz=w1600`;
             box.classList.remove('hidden');
         }
         function closeLightbox() {
@@ -1017,8 +707,6 @@
             document.getElementById('foto-lightbox-img').src = '';
             box.classList.add('hidden');
         }
-
-        // Fotoğraf sil (Drive'dan da siler)
         function deleteFoto(i) {
             const arr = currentTempForm.fotolar || [];
             const f = arr[i];
@@ -1028,18 +716,13 @@
             const idx = rooms.findIndex(r => r.id === activeRoomId);
             if (idx > -1) { rooms[idx].fotolar = [...arr]; saveData(); }
             renderFotolar();
-            if (f.id) {
-                driveApiPost({ action: 'delete', id: f.id }).catch(() => {});
-            }
+            if (f.id) { driveApiPost({ action: 'delete', id: f.id }).catch(() => {}); }
             showToast('Fotoğraf silindi.', 'fa-trash-can text-rose-500');
         }
-
-        // RESET ALL APP DATA
         function resetData() {
             if (confirm("Kaydettiğiniz tüm mahalleri silip formu varsayılana döndürmek istediğinize emin misiniz?")) {
                 rooms = JSON.parse(JSON.stringify(defaultRooms));
-                saveData();
-                renderDashboard();
+                saveData(); renderDashboard();
                 showToast("Veriler sıfırlandı.", "fa-trash-can text-rose-500");
             }
         }
