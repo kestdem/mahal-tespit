@@ -238,7 +238,7 @@
                         <label class="text-xs font-bold text-slate-500 uppercase tracking-wider">Çekilen Fotoğraflar</label>
                         <span id="foto-galeri-count" class="text-[10px] text-slate-400 font-medium">0 fotoğraf</span>
                     </div>
-                    <div id="foto-galeri" class="grid grid-cols-3 gap-2">
+                    <div id="foto-galeri" class="grid grid-cols-2 gap-2">
                         <p class="text-xs text-slate-400 col-span-3">Henüz fotoğraf çekilmedi.</p>
                     </div>
                 </div>
@@ -673,20 +673,20 @@
             if (!g) return;
             const arr = currentTempForm.fotolar || [];
             if (countEl) countEl.innerText = `${arr.length} fotoğraf`;
-            if (!arr.length) { g.innerHTML = '<p class="text-xs text-slate-400 col-span-3">Henüz fotoğraf çekilmedi.</p>'; return; }
+            if (!arr.length) { g.innerHTML = '<p class="text-xs text-slate-400 col-span-2">Henüz fotoğraf çekilmedi.</p>'; return; }
             g.innerHTML = arr.map((f, i) => `
-                <div class="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 flex items-center justify-center">
-                    <i class="fa-solid fa-image text-slate-300 text-xl"></i>
-                    <img src="https://drive.google.com/thumbnail?id=${f.id}&sz=w600"
+                <div class="relative rounded-xl overflow-hidden border border-slate-200 bg-slate-100 min-h-[140px] flex items-center justify-center">
+                    <i class="fa-solid fa-image text-slate-300 text-2xl absolute z-0"></i>
+                    <img src="https://drive.google.com/thumbnail?id=${f.id}&sz=w1000"
                          alt="${f.name}" loading="lazy" data-fid="${f.id}"
                          onclick="openLightbox('${f.id}')"
-                         class="w-full h-full object-cover cursor-pointer relative z-10"
+                         class="w-full h-auto block cursor-pointer relative z-10"
                          onerror="fixThumb(this)">
                     <button type="button" onclick="deleteFoto(${i})"
-                        class="absolute top-1 right-1 z-20 bg-black/50 hover:bg-black/70 text-white w-6 h-6 rounded-full flex items-center justify-center text-[11px] active:scale-95 transition-all">
+                        class="absolute top-1.5 right-1.5 z-20 bg-black/50 hover:bg-black/70 text-white w-7 h-7 rounded-full flex items-center justify-center text-xs active:scale-95 transition-all">
                         <i class="fa-solid fa-trash-can"></i>
                     </button>
-                    <span class="absolute bottom-0 left-0 right-0 z-20 bg-black/45 text-white text-[9px] px-1 py-0.5 truncate pointer-events-none">${f.name}</span>
+                    <span class="absolute bottom-0 left-0 right-0 z-20 bg-black/45 text-white text-[10px] px-1.5 py-1 truncate pointer-events-none">${f.name}</span>
                 </div>`).join('');
         }
         function fixThumb(img) {
